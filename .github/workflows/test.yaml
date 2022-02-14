@@ -11,6 +11,9 @@ on:
 
 jobs:
   lint:
+    permissions:
+      contents: read
+      pull-requests: read
     name: "Lint"
     runs-on: ubuntu-latest
     steps:
@@ -21,6 +24,8 @@ jobs:
           version: latest
 
   test:
+    permissions:
+      contents: read
     name: "Unit Tests"
     runs-on: ubuntu-latest
     steps:
