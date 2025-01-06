@@ -22,15 +22,33 @@ spec:
       labels:
         control-plane: controller-manager
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
       containers:
       - command:
         - /manager
-        args:
-        - --leader-elect
+        args: []
         image: controller:latest
         name: manager
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: OTEL_SERVICE_NAME
+          value: eraser-manager
         securityContext:
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL
         livenessProbe:
           httpGet:
             path: /healthz
@@ -45,7 +63,6 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: 100m
             memory: 30Mi
           requests:
             cpu: 100m

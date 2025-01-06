@@ -17,32 +17,29 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ImageListSpec defines the desired state of ImageList
+// ImageListSpec defines the desired state of ImageList.
 type ImageListSpec struct {
-	// The list of vulnerable images to delete if non-running.
+	// The list of non-compliant images to delete if non-running.
 	Images []string `json:"images"`
 }
 
-type NodeResult struct {
-	// node name of image results
-	Name string `json:"name"`
-	// list of images searched and their results
-	Images []NodeCleanUpDetail `json:"images"`
-}
-
-// ImageListStatus defines the observed state of ImageList
+// ImageListStatus defines the observed state of ImageList.
 type ImageListStatus struct {
 	// Information when the job was completed.
 	Timestamp *metav1.Time `json:"timestamp"`
-
-	// list of node names and their images with respective results
-	Node []NodeResult `json:"node"`
+	// Number of nodes that successfully ran the job
+	Success int64 `json:"success"`
+	// Number of nodes that failed to run the job
+	Failed int64 `json:"failed"`
+	// Number of nodes that were skipped due to a skip selector
+	Skipped int64 `json:"skipped"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:resource:scope="Cluster"
-// ImageList is the Schema for the imagelists API
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope="Cluster"
+// +kubebuilder:deprecatedversion:warning="v1alpha1 of the eraser API has been deprecated. Please migrate to v1."
+// ImageList is the Schema for the imagelists API.
 type ImageList struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -51,9 +48,9 @@ type ImageList struct {
 	Status ImageListStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
-// ImageListList contains a list of ImageList
+// ImageListList contains a list of ImageList.
 type ImageListList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

@@ -14,22 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1 contains API Schema definitions for the batch v1 API group
-//+kubebuilder:object:generate=true
-//+groupName=eraser.sh
+// Package v1 contains API Schema definitions for the eraser.sh v1 API group
+// +kubebuilder:object:generate=true
+// +groupName=eraser.sh
 package v1alpha1
 
 import (
+	runtime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
 var (
-	// GroupVersion is group version used to register these objects
+	// GroupVersion is group version used to register these objects.
 	GroupVersion = schema.GroupVersion{Group: "eraser.sh", Version: "v1alpha1"}
 
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
+	// SchemeBuilder is used to add go types to the GroupVersionKind scheme.
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
+
+	localSchemeBuilder = runtime.NewSchemeBuilder(SchemeBuilder.AddToScheme)
 
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
