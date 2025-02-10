@@ -1,0 +1,54 @@
+name: patch_docs
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[1-9]+' # run this workflow when a new patch version is published
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  patch-docs:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+        with:
+          egress-policy: audit
+
+      - name: Set release version and target branch for vNext
+        if: github.event_name == 'push'
+        run: |
+          TAG="$(echo "${{ github.ref }}" | tr -d 'refs/tags/v')"
+          MAJOR_VERSION="$(echo "${TAG}" | cut -d '.' -f1)"
+          echo "MAJOR_VERSION=${MAJOR_VERSION}" >> ${GITHUB_ENV}
+          MINOR_VERSION="$(echo "${TAG}" | cut -d '.' -f2)"
+          echo "MINOR_VERSION=${MINOR_VERSION}" >> ${GITHUB_ENV}
+          PATCH_VERSION="$(echo "${TAG}" | cut -d '.' -f3)"
+          echo "PATCH_VERSION=${PATCH_VERSION}" >> ${GITHUB_ENV}
+          echo "TAG=${TAG}" >> ${GITHUB_ENV}
+      
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Create release branch if needed # patched docs are always being merged to the main branch
+        run: |
+          git checkout main 
+      
+      - name: Create patch version docs
+        run: make patch-version-docs NEWVERSION=v${MAJOR_VERSION}.${MINOR_VERSION}.x TAG=v${TAG} OLDVERSION=v${MAJOR_VERSION}.${MINOR_VERSION}.$((PATCH_VERSION-1))
+      
+      - name: Create release pull request
+        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7.0.6
+        with:
+          commit-message: "chore: Patch docs for ${{ env.TAG }} release"
+          title: "chore: Patch docs for ${{ env.TAG }} release"
+          branch: "patch-docs-${{ env.TAG }}"
+          base: "main"
+          signoff: true
+          labels: |
+            release-pr
+            ${{ github.event.inputs.release_version }}
+      
